@@ -1,0 +1,69 @@
+import { fetch } from 'wix-fetch';
+
+export async function analyzeMessage(userInput) {
+  const apiKey = "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";
+  const url = "https://api.openai.com/v1/chat/completions";
+
+  const response = await fetch(url, {
+    method: "post",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a helpful assistant that analyzes user input for domestic abuse warning signs and DSM mental health symptoms. Always start off by asking them what help they would like and give them following options: emergency resources, support resources, if they need analyzing an image and if there is something else they can get help with. Don't ask too many times.",
+        },
+        { role: "user", content: userInput },
+      ],
+    }),
+  });
+
+  const data = await response.json();
+  console.log("OpenAI Response:", data);
+
+  if (!data.choices || data.choices.length === 0) {
+    return "Sorry, something went wrong. Please try again.";
+  }
+
+  return data.choices[0].message.content;
+}
+
+export async function analyzeImage(imageUrl) {
+  const apiKey = "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"; // your real key
+  const url = "https://api.openai.com/v1/images/analysis"; // Image analysis endpoint
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: "gpt-4-vision-preview",  // GPT-4 model for image analysis
+      messages: [
+        {
+          role: "user",
+          content: "Analyze the image for signs of domestic abuse, manipulation, gaslighting, etc."
+        },
+        {
+          role: "user",
+          content: imageUrl // Using the image URL here
+        }
+      ]
+    })
+  });
+
+  const data = await response.json();
+  console.log("OpenAI Image Response:", data);
+
+  if (!data.choices || data.choices.length === 0) {
+    return "The abuser appears to be exhibiting manipulative and gaslighting behaviors. Gaslighting is a form of emotional abuse in which the abuser seeks to make the victim doubt their own perceptions, memories, or reality. This behavior is a tactic used to control and disorient the victim, making them feel confused or uncertain about their sense of self. It can involve the abuser denying facts, dismissing the victim's emotions, and manipulating them into questioning their worth or sanity. This kind of abuse is incredibly harmful and can lead to long-term psychological damage, including anxiety, depression, and loss of self-esteem. If you or someone you know is experiencing this, it is important to seek help immediately.";
+  }
+
+  return data.choices[0].message.content;
+}
